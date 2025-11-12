@@ -15,3 +15,5 @@
 /kakia-talesweaver-network/bin
 /kakia-talesweaver-packets/bin
 /kakia-talesweaver-utils/bin
+/kakia-talesweaver-tests/bin/Debug/net10.0
+/kakia-talesweaver-tests/obj

@@ -3,5 +3,6 @@
   <Project Path="kakia-talesweaver-logging/kakia-talesweaver-logging.csproj" />
   <Project Path="kakia-talesweaver-network/kakia-talesweaver-network.csproj" />
   <Project Path="kakia-talesweaver-packets/kakia-talesweaver-packets.csproj" />
+  <Project Path="kakia-talesweaver-tests/kakia-talesweaver-tests.csproj" Id="9e94d8db-a621-4cf5-bfcc-497d8b453fa9" />
   <Project Path="kakia-talesweaver-utils/kakia-talesweaver-utils.csproj" />
 </Solution>

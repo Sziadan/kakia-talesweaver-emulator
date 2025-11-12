@@ -6,6 +6,8 @@ namespace kakia_talesweaver_network;
 public class RawPacket
 {
 	public byte[] Data { get; }
+	public byte PacketId => Data[0] == 0xAA ? Data[3] : Data[0];
+
 	public RawPacket(byte[] data)
 	{
 		Data = data;

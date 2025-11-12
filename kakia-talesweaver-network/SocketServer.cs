@@ -23,7 +23,6 @@ public abstract class SocketServer
 		{
 			_server.Bind(new IPEndPoint(IPAddress.Parse(_host), _port));
 			_server.Listen(0xFFFF);
-			_server.NoDelay = true;
 
 			Logger.Log($"Server is listening on {_host}:{_port}");
 

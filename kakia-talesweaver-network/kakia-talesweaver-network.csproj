@@ -9,6 +9,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\kakia-talesweaver-logging\kakia-talesweaver-logging.csproj" />
+    <ProjectReference Include="..\kakia-talesweaver-packets\kakia-talesweaver-packets.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Cryptography\keyblob.bin">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

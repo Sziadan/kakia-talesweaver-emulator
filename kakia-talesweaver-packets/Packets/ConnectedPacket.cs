@@ -12,7 +12,7 @@ public class ConnectedPacket
 		using PacketWriter pw = new();
 		pw.Write(Index);
 		pw.Write(Id);
-		pw.Write(Message);
+		pw.WriteRawASCII(Message);
 		return pw.ToArray();
 	}
 }
