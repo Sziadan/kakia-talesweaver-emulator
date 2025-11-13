@@ -15,4 +15,5 @@ In order to use this, you *need* to dump your own keyblob.bin from the client.
 * Sync multiple players
 
 
+# Watch the current progress in this youtube video
 [![Watch progress video](https://img.youtube.com/vi/MFwAA0RZxPY/mq2.jpg)](https://youtu.be/MFwAA0RZxPY)
