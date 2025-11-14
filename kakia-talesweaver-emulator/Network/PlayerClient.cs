@@ -126,12 +126,12 @@ public class PlayerClient : IPlayerClient
 		return _server;
 	}
 
-	public void LoadMap(MapInfo map, CancellationToken ct)
+	public void LoadMap(MapInfo map, bool sendEffect, CancellationToken ct)
 	{
 		Broadcast(new SendCharEffectPacket()
 		{
 			ObjectId = Character.Id,
-			Effect = CharEffect.Teleport
+			Effect = CharEffect.TeleportEffect2
 		}.ToBytes(), includeSelf: true);
 		Task.Delay(2000, ct).Wait(ct);
 
@@ -158,7 +158,10 @@ public class PlayerClient : IPlayerClient
 		foreach (var subList in map.Entities)
 		{
 			foreach (var entity in subList.Value)
-				Send(entity, ct).Wait(ct);
+			{
+				if (entity[2] == 0x04)
+					Send(entity, ct).Wait(ct);
+			}
 		}
 
 
@@ -178,5 +181,12 @@ public class PlayerClient : IPlayerClient
 	public bool InMapZone(ushort mapId, ushort zoneId)
 	{
 		return MapId == mapId && ZoneId == zoneId;
+	}
+
+	public MapInfo? GetCurrentMap()
+	{
+		string key = $"{MapId}-{ZoneId}";
+		TalesServer.Maps.TryGetValue(key, out var map);
+		return map;
 	}
 }

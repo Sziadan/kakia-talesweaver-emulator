@@ -22,8 +22,11 @@ public class SendCharEffectPacket
 public enum CharEffect: byte
 {
 	None,
-	Unknown1,
-	Unknown2,
-	Unknown3,
-	Teleport
+	LevelUp,
+	ExpOver, 
+	TeleportEffect1,
+	TeleportEffect2,
+	ClubLevelUp,
+	PvpCountDownTimer,
+	MaxLevel
 }

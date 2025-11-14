@@ -25,7 +25,7 @@ public class ChatHandler : PacketHandler
 			case "@warp":
 				if (TalesServer.Maps.TryGetValue(messageCmd[1], out MapInfo? map))
 				{
-					client.LoadMap(map, CancellationToken.None);
+					client.LoadMap(map, true, CancellationToken.None);
 				}
 				break;
 
@@ -38,12 +38,37 @@ public class ChatHandler : PacketHandler
 				client.Send(cAnswer.ToBytes(), CancellationToken.None);
 				break;
 
+			case "@startduel":
+				client.Send(new SendCharEffectPacket() { 
+					ObjectId = packet.CharacterId,
+					Effect = CharEffect.PvpCountDownTimer}
+				.ToBytes(), CancellationToken.None).Wait();
+				break;
+
+			case "@levelup":
+				client.Send(new SendCharEffectPacket()
+				{
+					ObjectId = packet.CharacterId,
+					Effect = CharEffect.LevelUp
+				}
+				.ToBytes(), CancellationToken.None).Wait();
+				break;
+
+			case "@maxlevel":
+				client.Send(new SendCharEffectPacket()
+				{
+					ObjectId = packet.CharacterId,
+					Effect = CharEffect.MaxLevel
+				}
+				.ToBytes(), CancellationToken.None).Wait();
+				break;
+
 			case "@test":
 				{
 					using PacketWriter pw = new();
 					pw.Write((byte)0x1A);
 					pw.Write(packet.CharacterId);
-					pw.Write((byte)0x04);
+					pw.Write((byte)0x08);
 					client.Send(pw.ToArray(), CancellationToken.None).Wait();
 					break;
 				}

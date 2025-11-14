@@ -1,4 +1,5 @@
 ﻿using kakia_talesweaver_emulator.Network;
+using kakia_talesweaver_logging;
 using kakia_talesweaver_network;
 using kakia_talesweaver_packets;
 using kakia_talesweaver_packets.Packets;
@@ -34,5 +35,38 @@ public class MovementHandler : PacketHandler
 		character.SpawnCharacterPacket.Movement.YPos = movement.Position.Y;
 
 		client.Broadcast(movePacket.ToBytes());
+
+		var map = client.GetCurrentMap();
+		if (map is not null)
+		{
+			var portal = map.EnteredPortal(movement.Position);
+			if (portal is not null)
+			{
+				Logger.Log($"Touched portal ({portal.Id}) at {portal.MinPoint.X}:{portal.MinPoint.Y}", LogLevel.Information);
+
+				switch (portal.Id)
+				{
+					case 4046323968:
+						client.LoadMap(TalesServer.Maps["3-19200"], true, CancellationToken.None);
+						break;
+
+					case 1764753664: // class room
+						client.LoadMap(TalesServer.Maps["6-38144"], true, CancellationToken.None);
+						break;
+
+					case 1275396352:
+						client.LoadMap(TalesServer.Maps["6-38656"], true, CancellationToken.None);
+						break;
+
+
+					case 1059258624:
+						client.LoadMap(TalesServer.Maps["6-38656"], true, CancellationToken.None);
+						break;
+
+					default:
+						break;
+				}
+			}
+		}
 	}
 }

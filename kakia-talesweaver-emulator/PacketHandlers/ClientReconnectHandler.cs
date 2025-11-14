@@ -36,7 +36,7 @@ public class ClientReconnectHandler : PacketHandler
 	public void SendToWorld(IPlayerClient client, RawPacket p)
 	{
 		client.SetCharacter();
-		client.LoadMap(TalesServer.Maps["6-38656"], CancellationToken.None);
+		client.LoadMap(TalesServer.Maps["6-38656"], false, CancellationToken.None);
 
 		/*
 		client.Send("15 00 06 97 00 00 00 04".ToByteArray(), CancellationToken.None).Wait();

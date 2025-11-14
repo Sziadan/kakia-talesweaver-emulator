@@ -12,7 +12,8 @@ public interface IPlayerClient
 	PlayerCharacter GetCharacter();
 	void SetCharacter(string? name = null);
 	TalesServer GetServer();
-	void LoadMap(MapInfo map, CancellationToken ct);
+	void LoadMap(MapInfo map, bool sendEffect, CancellationToken ct);
 
 	public bool InMapZone(ushort mapId, ushort zoneId);
+	public MapInfo? GetCurrentMap();
 }

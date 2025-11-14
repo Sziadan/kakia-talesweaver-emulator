@@ -7,6 +7,7 @@ public class MapInfo
 	private readonly MapPacket _mapPacket;
 	public Dictionary<byte, List<byte[]>> Entities = new();
 	public List<ObjectPos> SpawnPoints = [];
+	public List<WarpPortal> WarpPortals = [];
 
 	public ushort MapId => _mapPacket.MapId;
 	public ushort ZoneId => _mapPacket.ZoneId;
@@ -59,6 +60,12 @@ public class MapInfo
 					Entities[entityPacket[2]] = [];
 				}
 
+				if (entityPacket[1] == 0x00 && entityPacket[2] == 0x04)
+				{
+					var portal = WarpPortal.FromBytes(entityPacket);
+					this.WarpPortals.Add(portal);
+				}
+
 				Entities[entityPacket[2]].Add(entityPacket);
 			}
 		}
@@ -67,5 +74,14 @@ public class MapInfo
 	public MapPacket GetMapPacket()
 	{
 		return _mapPacket;
+	}
+
+	public WarpPortal? EnteredPortal(TsPoint position)
+	{
+		foreach (var portal in WarpPortals)
+			if (portal.CollidedWith(position))			
+				return portal;			
+		
+		return null;
 	}
 }
