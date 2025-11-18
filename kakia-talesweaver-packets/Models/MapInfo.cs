@@ -1,4 +1,5 @@
 ﻿using kakia_talesweaver_packets.Packets;
+using System.Text.Json;
 
 namespace kakia_talesweaver_packets.Models;
 
@@ -44,6 +45,17 @@ public class MapInfo
 			SpawnPoints.Add(pos);
 		}
 
+		Dictionary<uint, WarpPortal> warpPortalsById = new();
+		if (Directory.Exists(Path.Combine(path, "WarpPortals")))
+		{
+			string[] files = Directory.GetFiles(Path.Combine(path, "WarpPortals"), "*.json");
+			foreach (var file in files)
+			{
+				var portal = JsonSerializer.Deserialize<WarpPortal>(File.ReadAllText(file));
+				warpPortalsById[portal.Id] = portal;
+			}
+		}
+
 		if (Directory.Exists(Path.Combine(path, "Spawn")))
 		{
 
@@ -63,7 +75,11 @@ public class MapInfo
 				if (entityPacket[1] == 0x00 && entityPacket[2] == 0x04)
 				{
 					var portal = WarpPortal.FromBytes(entityPacket);
-					this.WarpPortals.Add(portal);
+					if (warpPortalsById.ContainsKey(portal.Id))
+					{
+						this.WarpPortals.Add(warpPortalsById[portal.Id]);
+					}
+					
 				}
 
 				Entities[entityPacket[2]].Add(entityPacket);

@@ -25,7 +25,7 @@ public class ChatHandler : PacketHandler
 			case "@warp":
 				if (TalesServer.Maps.TryGetValue(messageCmd[1], out MapInfo? map))
 				{
-					client.LoadMap(map, true, CancellationToken.None);
+					client.LoadMap(map, true);
 				}
 				break;
 

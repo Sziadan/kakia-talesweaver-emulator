@@ -12,29 +12,34 @@ public class MovementHandler : PacketHandler
 	public override void HandlePacket(IPlayerClient client, RawPacket p)
 	{
 		var movement = MovementRequestPacket.FromBytes(p.Data);
-		if (movement is null)
+		if (movement.Flag == MovementFlag.MovementStop)
 		{
 			// Not movement
 			return;
 		}
 
 		var character = client.GetCharacter();
-		var movePacket = new MoveObjectPacket
+
+		if (movement.Flag == MovementFlag.InitialRequest)
 		{
-			ObjectID = character.Id,
-			MoveType = 1,
-			MoveSpeed = 27,
-			PreviousPosition = character.Position,
-			TargetPosition = movement.Position,
-			Direction = movement.Direction
-		};
+			var movePacket = new MoveObjectPacket
+			{
+				ObjectID = character.Id,
+				MoveType = 1,
+				MoveSpeed = 27,
+				PreviousPosition = character.Position,
+				TargetPosition = movement.Position,
+				Direction = movement.Direction
+			};
+			client.Broadcast(movePacket.ToBytes());
+		}
 		character.Position = movement.Position;
 
 		// temporary fix for spawn position desync after movement
 		character.SpawnCharacterPacket.Movement.XPos = movement.Position.X;
 		character.SpawnCharacterPacket.Movement.YPos = movement.Position.Y;
 
-		client.Broadcast(movePacket.ToBytes());
+		if (movement.Flag == MovementFlag.InitialRequest) return;
 
 		var map = client.GetCurrentMap();
 		if (map is not null)
@@ -43,7 +48,12 @@ public class MovementHandler : PacketHandler
 			if (portal is not null)
 			{
 				Logger.Log($"Touched portal ({portal.Id}) at {portal.MinPoint.X}:{portal.MinPoint.Y}", LogLevel.Information);
+				string destKey = $"{portal.Destination.MapId}-{portal.Destination.ZoneId}";
 
+				client.LoadMap(TalesServer.Maps[destKey], true, portal.Destination.Position);
+
+
+				/*
 				switch (portal.Id)
 				{
 					case 4046323968:
@@ -66,6 +76,7 @@ public class MovementHandler : PacketHandler
 					default:
 						break;
 				}
+				*/
 			}
 		}
 	}

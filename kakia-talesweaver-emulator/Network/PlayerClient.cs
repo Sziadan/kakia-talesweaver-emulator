@@ -56,12 +56,13 @@ public class PlayerClient : IPlayerClient
 		}
 
 		PacketHandler handler = PacketHandlers.PacketHandlers.GetHandlerFor((PacketType)packet.PacketId);
-		//Logger.Log($"Recieved packetType [{packet.PacketId.ToString()}]", LogLevel.Debug);
-		//Logger.Log($"PckData: {Environment.NewLine} {packet.Data.ToFormatedHexString()}", LogLevel.Debug);
 		if (handler != null)
 		{
 			try
 			{
+				Logger.Log($"Recieved packetType [{packet.PacketId.ToString()}]", LogLevel.Debug);
+				Logger.Log($"PckData: {Environment.NewLine}{packet.Data.ToFormatedHexString()}", LogLevel.Debug);
+
 				handler.HandlePacket(this, packet);
 				return;
 			}
@@ -126,21 +127,33 @@ public class PlayerClient : IPlayerClient
 		return _server;
 	}
 
-	public void LoadMap(MapInfo map, bool sendEffect, CancellationToken ct)
+	public void LoadMap(MapInfo map, bool sendEffect, ObjectPos? spawnPos = null, CancellationToken ct = default)
 	{
-		Broadcast(new SendCharEffectPacket()
+		if (sendEffect)
 		{
-			ObjectId = Character.Id,
-			Effect = CharEffect.TeleportEffect2
-		}.ToBytes(), includeSelf: true);
-		Task.Delay(2000, ct).Wait(ct);
+			Broadcast(new SendCharEffectPacket()
+			{
+				ObjectId = Character.Id,
+				Effect = CharEffect.TeleportEffect2
+			}.ToBytes(), includeSelf: true);
+			Task.Delay(1500, ct).Wait(ct);
+		}
 
 		MapId = map.MapId;
 		ZoneId = map.ZoneId;
 
 		Send(map.GetMapPacket().ToBytes(), ct).Wait(ct);
-		Character.Position = map.SpawnPoints[0].Position.Copy();
-		Character.Direction = map.SpawnPoints[0].Direction;
+
+		if (spawnPos != null)
+		{
+			Character.Position = spawnPos.Position.Copy();
+			Character.Direction = spawnPos.Direction;
+		}
+		else
+		{
+			Character.Position = map.SpawnPoints[0].Position.Copy();
+			Character.Direction = map.SpawnPoints[0].Direction;
+		}
 
 		Character.SpawnCharacterPacket.Movement.XPos = Character.Position.X;
 		Character.SpawnCharacterPacket.Movement.YPos = Character.Position.Y;
@@ -151,6 +164,57 @@ public class PlayerClient : IPlayerClient
 		Send(new InitObjectIdPacket(Character.Id).ToBytes(), ct).Wait(ct);
 
 
+		// Send Gear and stats etc
+
+		// buffs
+		Send(@"2C 03 C6 85 96 00 05 03 C6 85 D5 2B 00 2D E1 94 
+00 01 00 00 03 C6 85 D6 2B 00 2D E1 95 00 01 00 
+00 03 C6 85 D7 2B 00 2D E1 96 00 01 00 00 03 C6 
+85 D8 2B 00 2D E3 D6 00 01 00 00 03 C6 85 D9 2B 
+00 2D E7 4A 00 01 00 00 00".ToByteArray(), CancellationToken.None).Wait();
+
+		// Stats
+		Send(@"08 00 00 FD FF 00 1E 84 8D 00 00 00 00 00 00 01 
+00 02 01 00 00 00 00 00 00 00 00 01 27 00 00 00 
+00 00 00 01 27 00 00 00 00 00 00 00 49 00 00 00 
+00 00 00 00 49 00 00 00 00 00 00 04 C5 00 00 00 
+00 00 00 04 C5 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 02 00 02 00 00 00 00 00 00 00 
+CD 00 00 00 00 00 00 00 64 00 00 00 00 00 00 00 
+FA 00 01 00 00 00 00 00 00 27 10 00 00 00 00 00 
+00 01 27 00 00 00 00 00 00 00 00 49 00 00 00 00 
+00 00 04 C5 00 00 00 00 00 00 00 CD 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 02 00 04 
+00 01 00 03 00 03 00 03 00 03 00 02 00 04 00 01 
+00 03 00 03 00 03 00 03 00 01 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 05 00 19 00 
+02 00 08 00 00 00 02 00 01 00 01 00 00 00 00 16 
+1B 00 00 02 6A 00 00 04 D6 00 00 02 67 00 00 04 
+D0 00 00 00 39 00 00 00 15 59 12 12 00 05 00 05 
+00 05 00 05 00 0A 00 05 00 05 00 0A 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 BA 
+7D EF 30 00 00 00 00 00 00 98 96 80 00 00 00 00 
+00 00 00 00 00".ToByteArray(), CancellationToken.None).Wait();
+
+		// Gear
+		Send(@"37 00 0F A6 E4 03 C6 85 B1 0A 81 F5 83 5B 83 62 
+83 77 83 8B 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 08 01 00 00 01 00 00 00 01 01 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 08 00 0A 00 0D 00 04 00 18 00 00 00 00 00 02 
+00 01 00 01 00 01 00 01 04 00 5F FF 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 01 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+00 00 00 00 00 00 00 00 FF 00".ToByteArray(), CancellationToken.None).Wait();
+
+
 		Send(@"4D 00 00 01 01 00 2D CF 94 00 01 00 01 01 00 00
 00 00 00 00 00 00 00 00 00 00 00 ".ToByteArray(), CancellationToken.None).Wait();
 
@@ -159,12 +223,19 @@ public class PlayerClient : IPlayerClient
 		{
 			foreach (var entity in subList.Value)
 			{
-				if (entity[2] == 0x04)
-					Send(entity, ct).Wait(ct);
+				// Do not include items
+				if (entity[2] == 0x03)
+					continue;
+
+				// Do not include pets
+				if (entity[2] == 0x06)
+					continue;
+
+				Send(entity, ct).Wait(ct);
 			}
 		}
 
-
+		/*
 		foreach (var player in _server.ConnectedPlayers.Values)
 		{
 			if (player == this || string.IsNullOrEmpty(player.GetCharacter().Name))
@@ -176,6 +247,7 @@ public class PlayerClient : IPlayerClient
 				.SpawnCharacterPacket
 				.ToBytes(SetAsOther: true), ct).Wait(ct);
 		}
+		*/
 	}
 
 	public bool InMapZone(ushort mapId, ushort zoneId)
