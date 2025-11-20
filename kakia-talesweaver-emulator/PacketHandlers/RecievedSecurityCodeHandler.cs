@@ -19,10 +19,18 @@ public class RecievedSecurityCodeHandler : PacketHandler
 		}
 
 		// Code is in csp.Message, handle it later
+		var session = client.GetSessionInfo();
+		client.RemoveSessionInfo();
+
+		if (session == null)
+		{
+			Logger.Log("Session info not found for client after security code input.");
+			return;
+		}
 
 		uint seed = (uint)Random.Shared.Next();
 		var pClient = (client as PlayerClient)!;
-		pClient._server.AccountSessions.AddOrUpdate(seed, pClient.AccountName, (_, _) => pClient.AccountName);
+		pClient._server.AccountSessions.AddOrUpdate(seed, session, (_, _) => session);
 
 		ServerConnectPacket scp = new()
 		{			
@@ -30,7 +38,7 @@ public class RecievedSecurityCodeHandler : PacketHandler
 			Port = 20002,
 			Flag1 = 2,
 			Seed = seed,
-			Username = pClient.AccountName,
+			Username = session.AccountId,
 			Unk = 0x27,
 			Flag2 = 0
 		};

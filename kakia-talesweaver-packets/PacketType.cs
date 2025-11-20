@@ -11,6 +11,12 @@ public enum PacketType : byte
 
 	InputtedSecurityCode = 0x18,
 	Heartbeat = 0x24,
+
+	// Character creation
+	CheckName = 0x28,
+	UpdateCharacterInfo = 0x2A,
+	CreateCharacter = 0x2C,
+
 	SelectCharacter = 0x2B,
 	Movement = 0x33,
 	ClickedEntity = 0x43,

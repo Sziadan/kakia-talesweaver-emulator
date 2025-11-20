@@ -1,8 +1,11 @@
-﻿using kakia_talesweaver_emulator.Network;
+﻿using kakia_talesweaver_emulator.DB;
+using kakia_talesweaver_emulator.Network;
 using kakia_talesweaver_logging;
 using kakia_talesweaver_network;
 using kakia_talesweaver_packets;
+using kakia_talesweaver_packets.Models;
 using kakia_talesweaver_packets.Packets;
+using kakia_talesweaver_utils;
 using kakia_talesweaver_utils.Extensions;
 using System.Buffers.Binary;
 
@@ -35,8 +38,32 @@ public class ClientReconnectHandler : PacketHandler
 
 	public void SendToWorld(IPlayerClient client, RawPacket p)
 	{
-		client.SetCharacter();
-		client.LoadMap(TalesServer.Maps["6-38656"], false);
+		//client.SetCharacter();
+		var thisChar = client.GetSessionInfo()?.Character;
+
+		if (thisChar == null)
+		{
+			Logger.Log("ClientReconnectHandler: Character is null when trying to load map.", LogLevel.Error);
+			return;
+		}
+
+		if (thisChar.MapId == 0 || thisChar.ZoneId == 0)
+		{			
+			thisChar.MapId = 6;
+			thisChar.ZoneId = 38656;
+			thisChar.Position = new ObjectPos()
+			{
+				Position = new TsPoint()
+				{
+					X = 305,
+					Y = 220
+				},
+				Direction = 6
+			};
+		}
+
+		client.LoadMap(TalesServer.Maps[$"{thisChar.MapId}-{thisChar.ZoneId}"], false, thisChar.Position);
+		
 
 		/*
 		client.Send("15 00 06 97 00 00 00 04".ToByteArray(), CancellationToken.None).Wait();
@@ -77,7 +104,29 @@ public class ClientReconnectHandler : PacketHandler
 		client.Send(@"3C 01 01 01 00 01 11 73 7A 69 61 64 61 6E 40 67
 6D 61 69 6C 2E 63 6F 6D".ToByteArray(), CancellationToken.None).Wait();
 		client.Send("02 00 00 00 00".ToByteArray(), CancellationToken.None).Wait();
-		client.Send("6B 00 00 01 00 01".ToByteArray(), CancellationToken.None).Wait();
+		
+
+		var session = client.GetSessionInfo();
+		if (session == null)
+			return;
+
+		var characters = JsonDB.GetCharacterList(session.AccountId);
+
+		using PacketWriter writer = new();
+		writer.Write((byte)0x6B);
+		writer.Write((short)0);
+		writer.Write((byte)1);
+		writer.Write((byte)0);
+		writer.Write((byte)characters.Count);
+		client.Send(writer.ToArray(), CancellationToken.None).Wait();
+
+		if (characters.Count > 0)
+		{
+			var charSelectListPacket = new CharacterSelectList() { Characters = characters };
+			client.Send(charSelectListPacket.ToBytes(), CancellationToken.None).Wait();
+		}
+
+		/*
 		client.Send(@"6B 01 01 00 69 0A 2B E3 69 0A 08 49 00 00 00 00
 00 00 1E 84 8D 00 01 00 00 00 00 00 0E 00 0F A6
 E4 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
@@ -106,6 +155,7 @@ FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 9A
 FC 31 BA 07 53 7A 69 61 64 61 6E".ToByteArray(), CancellationToken.None).Wait();
+		*/
 
 		client.Send(@"3C 01 01 01 00 01 11 73 7A 69 61 64 61 6E 40 67
 6D 61 69 6C 2E 63 6F 6D".ToByteArray(), CancellationToken.None).Wait();

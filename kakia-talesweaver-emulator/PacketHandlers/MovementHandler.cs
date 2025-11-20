@@ -12,7 +12,7 @@ public class MovementHandler : PacketHandler
 	public override void HandlePacket(IPlayerClient client, RawPacket p)
 	{
 		var movement = MovementRequestPacket.FromBytes(p.Data);
-		if (movement.Flag == MovementFlag.MovementStop)
+		if (movement?.Flag == MovementFlag.MovementStop)
 		{
 			// Not movement
 			return;
@@ -20,7 +20,7 @@ public class MovementHandler : PacketHandler
 
 		var character = client.GetCharacter();
 
-		if (movement.Flag == MovementFlag.InitialRequest)
+		if (movement?.Flag == MovementFlag.InitialRequest)
 		{
 			var movePacket = new MoveObjectPacket
 			{
@@ -33,11 +33,11 @@ public class MovementHandler : PacketHandler
 			};
 			client.Broadcast(movePacket.ToBytes());
 		}
-		character.Position = movement.Position;
+		character.Position = movement!.Position;
 
 		// temporary fix for spawn position desync after movement
-		character.SpawnCharacterPacket.Movement.XPos = movement.Position.X;
-		character.SpawnCharacterPacket.Movement.YPos = movement.Position.Y;
+		character.SpawnCharacterPacket!.Position.Position.X = movement.Position.X;
+		character.SpawnCharacterPacket!.Position.Position.Y = movement.Position.Y;
 
 		if (movement.Flag == MovementFlag.InitialRequest) return;
 

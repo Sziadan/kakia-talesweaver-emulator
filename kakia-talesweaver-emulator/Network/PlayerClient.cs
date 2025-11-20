@@ -1,4 +1,5 @@
-﻿using kakia_talesweaver_emulator.Models;
+﻿using kakia_talesweaver_emulator.DB;
+using kakia_talesweaver_emulator.Models;
 using kakia_talesweaver_emulator.PacketHandlers;
 using kakia_talesweaver_logging;
 using kakia_talesweaver_network;
@@ -18,9 +19,13 @@ public class PlayerClient : IPlayerClient
 	private ServerType _serverType;
 	private bool _cryptoSet = false;
 
-	public string AccountName = string.Empty;
+	private uint _sessionSeed = 0;
+
+	public string AccountId = string.Empty;
 	public ushort MapId = 0;
 	public ushort ZoneId = 0;
+
+	public Character CurrentCharacter = new();
 	public PlayerCharacter Character = new();
 
 	public PlayerClient(SocketClient socketClient, ServerType serverType, TalesServer server)
@@ -90,14 +95,27 @@ public class PlayerClient : IPlayerClient
 
 	public void UpdateCryptoSeed(uint seed)
 	{
+		_sessionSeed = seed;
 		_server.AccountSessions.TryGetValue(seed, out var session);
 		if (session != null)
 		{
-			AccountName = session;
-			Logger.Log($"Account {AccountName} assigned to session {seed}", LogLevel.Information);
+			AccountId = session.AccountId;
+			SetCharacter(session.Character?.Name);
+			Logger.Log($"Account {AccountId} assigned to session {seed}", LogLevel.Information);
 		}
 
 		_socketClient!.SetCrypto(seed);
+	}
+
+	public SessionInfo? GetSessionInfo()
+	{
+		_server.AccountSessions.TryGetValue(_sessionSeed, out var session);
+		return session;
+	}
+
+	public bool RemoveSessionInfo()
+	{
+		return _server.AccountSessions.TryRemove(_sessionSeed, out var _);
 	}
 
 	public void Broadcast(byte[] packet, bool includeSelf = true)
@@ -112,7 +130,26 @@ public class PlayerClient : IPlayerClient
 
 	public void SetCharacter(string? name = null)
 	{
-		string path = Path.Combine("Accounts", string.IsNullOrEmpty(name) ? AccountName : name);
+		if (string.IsNullOrEmpty(name))
+		{
+			return;
+		}
+
+		CurrentCharacter = DB.JsonDB.GetCharacterList(AccountId).FirstOrDefault(m => m.Name.Equals(name))!;
+		GetSessionInfo()?.Character = CurrentCharacter;
+		Character.SpawnCharacterPacket = new SpawnCharacterPacket()
+		{
+			UserId = CurrentCharacter.Id,			
+			UserName = CurrentCharacter.Name,
+			Position = CurrentCharacter.Position,
+			ModelId = CurrentCharacter.ModelId,
+			GM = 1
+		};
+
+		Character.Id = Character.SpawnCharacterPacket.UserId;
+
+		/*
+		string path = Path.Combine("Accounts", string.IsNullOrEmpty(name) ? AccountId : name);
 		Character.SpawnCharacterPacket = SpawnCharacterPacket.FromBytes(
 			File.ReadAllText($"{path}.txt")
 			.ToByteArray());
@@ -120,6 +157,7 @@ public class PlayerClient : IPlayerClient
 		Character.Id = Character.SpawnCharacterPacket.UserId;
 		Character.Name = Character.SpawnCharacterPacket.UserName;
 		Character.Position = new TsPoint(Character.SpawnCharacterPacket.Movement.XPos, Character.SpawnCharacterPacket.Movement.YPos);
+		*/
 	}
 
 	public TalesServer GetServer()
@@ -155,14 +193,20 @@ public class PlayerClient : IPlayerClient
 			Character.Direction = map.SpawnPoints[0].Direction;
 		}
 
-		Character.SpawnCharacterPacket.Movement.XPos = Character.Position.X;
-		Character.SpawnCharacterPacket.Movement.YPos = Character.Position.Y;
-		Character.SpawnCharacterPacket.Movement.MovePathData[0] = Character.Direction;
+		Character.SpawnCharacterPacket?.Position.Position.X = Character.Position.X;
+		Character.SpawnCharacterPacket?.Position.Position.Y = Character.Position.Y;
+		Character.SpawnCharacterPacket?.Position.Direction = Character.Direction;
 
-		Send(Character.SpawnCharacterPacket.ToBytes(), ct).Wait(ct);
-		Broadcast(Character.SpawnCharacterPacket.ToBytes(SetAsOther: true), false);
+
+
+
+		Send(Character.SpawnCharacterPacket!.ToBytes(), ct).Wait(ct);
+		Broadcast(Character.SpawnCharacterPacket!.ToBytes(SetAsOther: true), false);
 		Send(new InitObjectIdPacket(Character.Id).ToBytes(), ct).Wait(ct);
 
+		CurrentCharacter.MapId = MapId;
+		CurrentCharacter.ZoneId = ZoneId;
+		JsonDB.SaveCharacter(AccountId, CurrentCharacter);
 
 		// Send Gear and stats etc
 

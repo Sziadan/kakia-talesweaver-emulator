@@ -123,6 +123,28 @@ public class ClickedEntityHandler : PacketHandler
 
 			client.Send("44 05 00 00 01 00".ToByteArray(), CancellationToken.None).Wait();
 
+
+			using PacketWriter pwMsg = new();
+			pwMsg.Write((byte)0x44);
+			pwMsg.Write((byte)05);
+			pwMsg.Write((byte)02);
+			pwMsg.Write((byte)0);
+			pwMsg.Write((byte)0x21);
+			pwMsg.Write((byte)0x97);
+			pwMsg.Write((byte)0xC2);
+			pwMsg.Write((int)0);
+
+			string message = "I'm really curious about J-Ren's hair.</n>Look at it, it's not groomed and it's completely ruffled, right?</n>You should make sure to take good care of your hair.";
+			byte[] respBytes = Encoding.ASCII.GetBytes(message);
+
+			pwMsg.Write((byte)respBytes.Length);
+			pwMsg.Write(respBytes);
+
+			byte[] pck = pwMsg.ToArray();
+			string pckStr = pck.ToFormatedHexString();
+			client.Send(pck, CancellationToken.None).Wait();
+
+			/*
 			client.Send(@"44 05 02 00 21 97 C2 00 00 00 00 9A 83 4A 83 8C
 83 93 82 CC 94 AF 82 CC 96 D1 82 AA 82 A0 82 DC
 82 E8 82 C9 82 E0 8B 43 82 C9 82 C8 82 C1 82 C4
@@ -134,6 +156,7 @@ public class ClickedEntityHandler : PacketHandler
 93 FC 82 EA 82 CD 82 B5 82 C1 82 A9 82 E8 82 C6
 82 B5 82 C4 82 A8 82 A2 82 BD 95 FB 82 AA 97 C7
 82 A2 82 E6 81 42".ToByteArray(), CancellationToken.None).Wait();
+			*/
 
 			client.Send("44 05 05 03 C0 68 24 03 C0 71 9B".ToByteArray(), CancellationToken.None).Wait();
 

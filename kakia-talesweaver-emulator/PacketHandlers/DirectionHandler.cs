@@ -18,7 +18,7 @@ public class DirectionHandler : PacketHandler
 		character.Direction = p.Data[1];
 
 		// temporary fix for spawn position desync after movement
-		character.SpawnCharacterPacket.Movement.MovePathData[0] = p.Data[1];
+		character.SpawnCharacterPacket?.Position.Direction = p.Data[1];
 
 		using PacketWriter pw = new();
 		pw.Write((byte)0x11);

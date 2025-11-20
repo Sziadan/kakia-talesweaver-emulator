@@ -11,7 +11,7 @@ public class TalesServer : SocketServer
 	public static string serverIp = "127.0.0.1";
 
 	public ConcurrentDictionary<string, IPlayerClient> ConnectedPlayers { get; } = new();
-	public ConcurrentDictionary<uint, string> AccountSessions { get; set; }
+	public ConcurrentDictionary<uint, SessionInfo> AccountSessions { get; set; }
 	private ServerType _serverType = ServerType.Login;
 	public static Dictionary<string, MapInfo> Maps = new();
 
@@ -30,7 +30,7 @@ public class TalesServer : SocketServer
 		}
 	};
 
-	public TalesServer(string host, int port, ServerType serverType, ConcurrentDictionary<uint, string> accountSessions) : base(host, port)
+	public TalesServer(string host, int port, ServerType serverType, ConcurrentDictionary<uint, SessionInfo> accountSessions) : base(host, port)
 	{
 		_serverType = serverType;
 		AccountSessions = accountSessions;

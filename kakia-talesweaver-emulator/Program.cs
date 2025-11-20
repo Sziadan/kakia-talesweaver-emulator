@@ -9,7 +9,7 @@ using System.Text;
 PacketHandlers.LoadPacketHandlers("kakia_talesweaver_emulator.PacketHandlers");
 Logger.SetLogLevel(LogLevel.Debug);
 
-ConcurrentDictionary<uint, string> accountSessions  = new();
+ConcurrentDictionary<uint, SessionInfo> accountSessions  = new();
 
 string listenIp = "127.0.0.1";
 

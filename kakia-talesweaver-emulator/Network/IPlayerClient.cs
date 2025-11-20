@@ -11,6 +11,8 @@ public interface IPlayerClient
 	ServerType GetServerType();
 	PlayerCharacter GetCharacter();
 	void SetCharacter(string? name = null);
+	public SessionInfo? GetSessionInfo();
+	public bool RemoveSessionInfo();
 	TalesServer GetServer();
 	void LoadMap(MapInfo map, bool sendEffect, ObjectPos? spawnPos = null, CancellationToken ct = default);
 

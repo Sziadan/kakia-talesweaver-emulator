@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using kakia_talesweaver_packets.Models;
 using kakia_talesweaver_utils;
 
 namespace kakia_talesweaver_packets.Packets;
@@ -14,9 +15,9 @@ public class SpawnCharacterPacket
 	// Main identifier used in parser
 	public uint UserId { get; set; }
 	public bool IsThisPlayer { get; set; }
-
-	// Movement / path (first block)
-	public MovementInfo Movement { get; set; } = new();
+	public uint GM { get; set; } = 0;
+	public ObjectPos Position { get; set; } = new();
+	public byte Unk { get; set; }
 
 	// Basic stats block
 	public BasicStatsBlock BasicStats { get; set; } = new();
@@ -36,7 +37,7 @@ public class SpawnCharacterPacket
 	public byte UnknownByte3 { get; set; }
 	public uint UnknownInt3 { get; set; }
 	public uint UnknownInt4 { get; set; }
-	public uint UnknownInt5 { get; set; }
+	public uint ModelId { get; set; }
 
 	// Equipment list (22 slots represented compactly by a bitmask in the stream)
 	public List<ItemSlotData> Equipment { get; set; } = new();
@@ -173,6 +174,7 @@ public class SpawnCharacterPacket
 		public byte UnknownFlag3 { get; set; }
 	}
 
+	// Probably pet info
 	public class FinalStatusBlock
 	{
 		public byte UnknownByte6 { get; set; }
@@ -204,10 +206,9 @@ public class SpawnCharacterPacket
 
 		// --- spawn user payload ---
 		// Movement
-		pw.Write(Movement.UnknownInt1);
-		pw.Write(Movement.XPos);
-		pw.Write(Movement.YPos);
-		pw.Write(Movement.MovePathData);
+		pw.Write(GM);
+		pw.Write(Position.ToBytes());
+		pw.Write(Unk);
 
 		// Basic stats
 		pw.Write(BasicStats.UnknownFlag1);
@@ -229,7 +230,7 @@ public class SpawnCharacterPacket
 		pw.Write(UnknownByte3);
 		pw.Write(UnknownInt3);
 		pw.Write(UnknownInt4);
-		pw.Write(UnknownInt5);
+		pw.Write(ModelId);
 
 		_pack_equipment(pw, Equipment);
 
@@ -458,10 +459,11 @@ public class SpawnCharacterPacket
 			packet.IsThisPlayer = reader.ReadByte() != 0;
 
 			// Movement
-			packet.Movement.UnknownInt1 = reader.ReadUInt32BE();
-			packet.Movement.XPos = reader.ReadUInt16BE();
-			packet.Movement.YPos = reader.ReadUInt16BE();
-			packet.Movement.MovePathData = reader.ReadBytes(2);
+			packet.GM = reader.ReadUInt32BE();
+			packet.Position.Position.X = reader.ReadUInt16BE();
+			packet.Position.Position.Y = reader.ReadUInt16BE();
+			packet.Position.Direction = reader.ReadByte();
+			packet.Unk = reader.ReadByte();
 
 			// Basic stats
 			packet.BasicStats.UnknownFlag1 = reader.ReadByte();
@@ -485,7 +487,7 @@ public class SpawnCharacterPacket
 			packet.UnknownByte3 = reader.ReadByte();
 			packet.UnknownInt3 = reader.ReadUInt32BE();
 			packet.UnknownInt4 = reader.ReadUInt32BE();
-			packet.UnknownInt5 = reader.ReadUInt32BE();
+			packet.ModelId = reader.ReadUInt32BE();
 
 			// Equipment
 			packet.Equipment = _parse_equipment(reader);

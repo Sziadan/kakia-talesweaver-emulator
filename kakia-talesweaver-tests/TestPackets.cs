@@ -54,7 +54,7 @@ FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 			if (spawn_sziadan == null)
 				Assert.Fail("Failed to parse SpawnCharacterPacket");
 
-			var bytes_sziadan = spawn_sziadan.ToBytes(true);
+			var bytes_sziadan = spawn_sziadan?.ToBytes(true);
 
 			if (!bytes_sziadan.SequenceEqual(packet_sziadan))			
 				Assert.Fail($"Serialized bytes do not match original packet.{Environment.NewLine}Original:{Environment.NewLine}{packet_sziadan.ToFormatedHexString()}{Environment.NewLine}Serialized:{Environment.NewLine}{bytes_sziadan.ToFormatedHexString()}");			

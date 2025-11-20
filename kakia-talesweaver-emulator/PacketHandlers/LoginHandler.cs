@@ -1,4 +1,5 @@
-﻿using kakia_talesweaver_emulator.Network;
+﻿using kakia_talesweaver_emulator.DB;
+using kakia_talesweaver_emulator.Network;
 using kakia_talesweaver_network;
 using kakia_talesweaver_packets;
 using kakia_talesweaver_packets.Packets;
@@ -18,15 +19,20 @@ public class LoginHandler : PacketHandler
 		if (login is null)
 			return;
 
-		(client as PlayerClient)!.AccountName = login.Username;
+		(client as PlayerClient)!.AccountId = login.Username;
 
-		CharacterListPacket clp = new();
-		clp.Characters.Add(new CharacterInfo()
+		var charlist = JsonDB.GetCharacterList(login.Username);
+
+		CharacterListPacket clp = new()
 		{
-			ServerId = 26,
-			Name = login.Username
-		});
-
+			AccountId = [new AccountIdInfo()
+			{
+				ServerId = 26,
+				Name = login.Username,
+				CharacterCount = (byte)charlist.Count
+			}]
+		};
+		
 		client.Send(clp.ToBytes(), CancellationToken.None).Wait();
 	}
 }

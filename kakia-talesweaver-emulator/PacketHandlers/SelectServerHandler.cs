@@ -1,4 +1,5 @@
-﻿using kakia_talesweaver_emulator.Network;
+﻿using kakia_talesweaver_emulator.Models;
+using kakia_talesweaver_emulator.Network;
 using kakia_talesweaver_logging;
 using kakia_talesweaver_network;
 using kakia_talesweaver_packets;
@@ -16,15 +17,16 @@ public class SelectServerHandler : PacketHandler
 
 		using PacketReader pr = new(p.Data);
 		pr.Skip(3);
-		string accountName = pr.ReadPrefixedString();
-		Logger.Log($"Logging in as: {accountName}");
+		var session = new SessionInfo() { AccountId = pr.ReadPrefixedString() };
+		
+		Logger.Log($"Logging in as: {session.AccountId}");
 
 		uint seed = (uint)Random.Shared.Next();
-		(client as PlayerClient)!._server.AccountSessions.AddOrUpdate(seed, accountName, (_, _) => accountName);
+		(client as PlayerClient)!._server.AccountSessions.AddOrUpdate(seed, session, (_, _) => session);
 
 		ServerConnectPacket scp = new()
 		{
-			Username = accountName,
+			Username = session.AccountId,
 			IP = System.Net.IPAddress.Parse(TalesServer.serverIp),
 			Port = 20001,
 			Flag1 = 2,
