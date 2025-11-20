@@ -12,6 +12,28 @@ public class PacketReader : BinaryReader
 	{
 	}
 
+	public ulong ReadUInt64BE()
+	{
+		var bytes = ReadBytes(8);
+		if (bytes.Length < 8)
+		{
+			throw new EndOfStreamException();
+		}
+		Array.Reverse(bytes);
+		return BitConverter.ToUInt64(bytes, 0);
+	}
+
+	public long ReadInt64BE()
+	{
+		var bytes = ReadBytes(8);
+		if (bytes.Length < 8)
+		{
+			throw new EndOfStreamException();
+		}
+		Array.Reverse(bytes);
+		return BitConverter.ToInt64(bytes, 0);
+	}
+
 	public uint ReadUInt32BE()
 	{
 		var bytes = ReadBytes(4);

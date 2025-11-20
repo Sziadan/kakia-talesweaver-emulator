@@ -18,8 +18,10 @@ public enum PacketType : byte
 	CreateCharacter = 0x2C,
 
 	SelectCharacter = 0x2B,
+	SetPose = 0x32, // Sit/Stand, others?
 	Movement = 0x33,
 	ClickedEntity = 0x43,
 	Login = 0x66,
-	ServerSelect = 0x67
+	ServerSelect = 0x67,
+	NpcPickedDialogAnswer = 0x6C
 }

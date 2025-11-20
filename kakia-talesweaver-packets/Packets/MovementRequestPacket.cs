@@ -8,6 +8,7 @@ namespace kakia_talesweaver_packets.Packets;
 public class MovementRequestPacket
 {
 	public MovementFlag Flag { get; set; }
+	public MovementType MoveType { get; set; }
 	public TsPoint Position { get; set; } = new ();
 	public byte Direction { get; set; }
 
@@ -25,7 +26,7 @@ public class MovementRequestPacket
 		switch (packet.Flag)
 		{
 			case MovementFlag.InitialRequest:
-				pr.Skip(1);
+				packet.MoveType = (MovementType)pr.ReadByte();
 				packet.Position = new TsPoint(pr.ReadUInt16BE(), pr.ReadUInt16BE());
 				//packet.Direction = pr.ReadByte();
 				break;
@@ -49,4 +50,11 @@ public enum MovementFlag : byte
 	InitialRequest = 0x00,
 	MovementStop = 0x01,
 	CurrentLocation = 0x02
+}
+
+public enum MovementType : byte
+{
+	Walk = 0x00,
+	Run = 0x01,
+	Unknown
 }

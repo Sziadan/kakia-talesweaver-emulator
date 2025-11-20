@@ -2,6 +2,7 @@
 using kakia_talesweaver_emulator.Network;
 using kakia_talesweaver_network;
 using kakia_talesweaver_packets;
+using kakia_talesweaver_packets.Packets;
 
 namespace kakia_talesweaver_emulator.PacketHandlers;
 
@@ -23,6 +24,18 @@ public class UpdateCharacterInfoHandler : PacketHandler
 			return;
 		}
 
-		JsonDB.SaveCharacter(session.AccountId, session.Character);		 
+		JsonDB.SaveCharacter(session.AccountId, session.Character);
+
+		EntitySpawnPacket packet = new()
+		{
+			SubOpcode = ActionType.Despawn,
+			SpawnKind = SpawnType.Player,
+			RemovePayload = new EntitySpawnPacket.RemoveObjectPayload()
+			{
+				ObjectID = (int)session.Character.Id
+			}
+		};
+
+		client.Broadcast(packet.ToBytes(), false);
 	}
 }

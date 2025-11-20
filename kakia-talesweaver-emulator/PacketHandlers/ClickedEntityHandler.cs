@@ -49,7 +49,6 @@ public class ClickedEntityHandler : PacketHandler
 		if (entityId == 1946812928)
 		{
 
-
 			using PacketWriter pwMsg = new();
 			pwMsg.Write((byte)0x44);
 			pwMsg.Write((byte)0x04); // 04 => Dialog ?
@@ -161,6 +160,64 @@ public class ClickedEntityHandler : PacketHandler
 			client.Send("44 05 05 03 C0 68 24 03 C0 71 9B".ToByteArray(), CancellationToken.None).Wait();
 
 			client.Send("44 05 01".ToByteArray(), CancellationToken.None).Wait();
+		}
+		else if (entityId == 185205248) // Outfitter
+		{
+			using PacketWriter pwMsg = new();
+			pwMsg.Write((byte)0x44);
+			pwMsg.Write((byte)0x04); // 04 => Dialog ?
+			pwMsg.Write((byte)0x02); // 02 => With options
+
+			ulong dialogAnswerId = 1;
+			uint modelId = 2201600;
+
+			pwMsg.Write(dialogAnswerId);
+			pwMsg.Write(modelId);
+			pwMsg.Write((byte)0x00);
+
+			Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
+			string message = "Dress to impress!\nWant to try out a new outfit?\nPerhaps add some flair?";
+			byte[] messageBytes = Encoding.GetEncoding("shift-jis").GetBytes(message);
+
+			pwMsg.Write((byte)messageBytes.Length);
+			pwMsg.Write(messageBytes);
+
+			pwMsg.Write((byte)0x04);
+			pwMsg.Write((byte)0x00);
+
+			string resp1 = "Let try the next one.";
+			byte[] resp1Bytes = Encoding.GetEncoding("shift-jis").GetBytes(resp1);
+
+			pwMsg.Write((byte)resp1Bytes.Length);
+			pwMsg.Write(resp1Bytes);
+			pwMsg.Write((byte)0x00);
+
+
+			string resp2 = "Let me try the previous one.";
+			byte[] resp2Bytes = Encoding.GetEncoding("shift-jis").GetBytes(resp2);
+
+			pwMsg.Write((byte)resp2Bytes.Length);
+			pwMsg.Write(resp2Bytes);
+			pwMsg.Write((byte)0x00);
+
+			string resp4 = "Turn me back to normal.";
+			byte[] resp4Bytes = Encoding.GetEncoding("shift-jis").GetBytes(resp4);
+
+			pwMsg.Write((byte)resp4Bytes.Length);
+			pwMsg.Write(resp4Bytes);
+			pwMsg.Write((byte)0x00);
+
+			string resp3 = "Nevermind.";
+			byte[] resp3Bytes = Encoding.GetEncoding("shift-jis").GetBytes(resp3);
+
+			pwMsg.Write((byte)resp3Bytes.Length);
+			pwMsg.Write(resp3Bytes);
+			pwMsg.Write((byte)0x00);
+
+
+
+			client.Send(pwMsg.ToArray(), CancellationToken.None).Wait();
 		}
 		
 	}

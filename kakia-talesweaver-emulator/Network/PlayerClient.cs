@@ -143,7 +143,9 @@ public class PlayerClient : IPlayerClient
 			UserName = CurrentCharacter.Name,
 			Position = CurrentCharacter.Position,
 			ModelId = CurrentCharacter.ModelId,
-			GM = 1
+			GM = 1,
+			CurrentHealth = 180,
+			MaxHealth = 180,
 		};
 
 		Character.Id = Character.SpawnCharacterPacket.UserId;
@@ -208,8 +210,9 @@ public class PlayerClient : IPlayerClient
 		CurrentCharacter.ZoneId = ZoneId;
 		JsonDB.SaveCharacter(AccountId, CurrentCharacter);
 
+		/*
 		// Send Gear and stats etc
-
+		
 		// buffs
 		Send(@"2C 03 C6 85 96 00 05 03 C6 85 D5 2B 00 2D E1 94 
 00 01 00 00 03 C6 85 D6 2B 00 2D E1 95 00 01 00 
@@ -258,6 +261,7 @@ D0 00 00 00 39 00 00 00 15 59 12 12 00 05 00 05
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
 00 00 00 00 00 00 00 00 FF 00".ToByteArray(), CancellationToken.None).Wait();
 
+		*/
 
 		Send(@"4D 00 00 01 01 00 2D CF 94 00 01 00 01 01 00 00
 00 00 00 00 00 00 00 00 00 00 00 ".ToByteArray(), CancellationToken.None).Wait();

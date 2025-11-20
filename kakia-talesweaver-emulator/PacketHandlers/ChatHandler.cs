@@ -73,6 +73,11 @@ public class ChatHandler : PacketHandler
 					break;
 				}
 
+			case "@refresh":
+				var character = client.GetCharacter();
+				client.Send(character.SpawnCharacterPacket!.ToBytes(), CancellationToken.None).Wait();
+				break;
+
 			default:
 				break;
 		}

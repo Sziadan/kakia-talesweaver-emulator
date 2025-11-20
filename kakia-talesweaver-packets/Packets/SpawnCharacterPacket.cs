@@ -15,7 +15,9 @@ public class SpawnCharacterPacket
 	// Main identifier used in parser
 	public uint UserId { get; set; }
 	public bool IsThisPlayer { get; set; }
-	public uint GM { get; set; } = 0;
+	public byte GM { get; set; } = 0;
+	public byte UnkByte1 { get; set; } = 0;
+	public short UnkShort1 { get; set; } = 0;
 	public ObjectPos Position { get; set; } = new();
 	public byte Unk { get; set; }
 
@@ -27,15 +29,16 @@ public class SpawnCharacterPacket
 
 	// Guild / economy
 	public uint GuildId { get; set; }
-	public ulong Money { get; set; }
-	public ulong Experience { get; set; }
+	public ulong CurrentHealth { get; set; }
+	public ulong MaxHealth { get; set; }
 
 	// Guild/team (conditional)
 	public GuildTeamInfo GuildTeam { get; set; } = new();
 
 	// Misc fields read after guild/team
 	public byte UnknownByte3 { get; set; }
-	public uint UnknownInt3 { get; set; }
+	public ushort Unk2 { get; set; }
+	public ushort Outfit { get; set; }
 	public uint UnknownInt4 { get; set; }
 	public uint ModelId { get; set; }
 
@@ -55,7 +58,7 @@ public class SpawnCharacterPacket
 	public string? ConditionalGuildName { get; set; }
 
 	public uint UnknownInt7 { get; set; }
-	public uint UnknownInt8 { get; set; }
+	public uint EquippedTitle { get; set; }
 
 	// User state (complex)
 	public UserStateBlock UserState { get; set; } = new();
@@ -207,6 +210,8 @@ public class SpawnCharacterPacket
 		// --- spawn user payload ---
 		// Movement
 		pw.Write(GM);
+		pw.Write(UnkByte1);
+		pw.Write(UnkShort1);
 		pw.Write(Position.ToBytes());
 		pw.Write(Unk);
 
@@ -222,13 +227,14 @@ public class SpawnCharacterPacket
 		_pack_string(pw, UserName);
 
 		pw.Write(GuildId);
-		pw.Write(Money);
-		pw.Write(Experience);
+		pw.Write(CurrentHealth);
+		pw.Write(MaxHealth);
 
 		_pack_guild_team(pw, GuildTeam);
 
 		pw.Write(UnknownByte3);
-		pw.Write(UnknownInt3);
+		pw.Write(Unk2);
+		pw.Write(Outfit);		
 		pw.Write(UnknownInt4);
 		pw.Write(ModelId);
 
@@ -252,7 +258,7 @@ public class SpawnCharacterPacket
 		}
 
 		pw.Write(UnknownInt7);
-		pw.Write(UnknownInt8);
+		pw.Write(EquippedTitle);
 
 		_pack_user_state(pw, UserState);
 
@@ -459,7 +465,9 @@ public class SpawnCharacterPacket
 			packet.IsThisPlayer = reader.ReadByte() != 0;
 
 			// Movement
-			packet.GM = reader.ReadUInt32BE();
+			packet.GM = reader.ReadByte();
+			packet.UnkByte1 = reader.ReadByte();
+			packet.UnkShort1 = reader.ReadInt16BE();
 			packet.Position.Position.X = reader.ReadUInt16BE();
 			packet.Position.Position.Y = reader.ReadUInt16BE();
 			packet.Position.Direction = reader.ReadByte();
@@ -478,14 +486,15 @@ public class SpawnCharacterPacket
 
 			// Guild/economy
 			packet.GuildId = reader.ReadUInt32BE();
-			packet.Money = ReadUInt64BE(reader);
-			packet.Experience = ReadUInt64BE(reader);
+			packet.CurrentHealth = ReadUInt64BE(reader);
+			packet.MaxHealth = ReadUInt64BE(reader);
 
 			// Guild/team
 			packet.GuildTeam = _parse_guild_team(reader);
 
 			packet.UnknownByte3 = reader.ReadByte();
-			packet.UnknownInt3 = reader.ReadUInt32BE();
+			packet.Unk2 = reader.ReadUInt16BE();
+			packet.Outfit = reader.ReadUInt16BE();			
 			packet.UnknownInt4 = reader.ReadUInt32BE();
 			packet.ModelId = reader.ReadUInt32BE();
 
@@ -510,7 +519,7 @@ public class SpawnCharacterPacket
 			}
 
 			packet.UnknownInt7 = reader.ReadUInt32BE();
-			packet.UnknownInt8 = reader.ReadUInt32BE();
+			packet.EquippedTitle = reader.ReadUInt32BE();
 
 			packet.UserState = _parse_user_state(reader);
 
